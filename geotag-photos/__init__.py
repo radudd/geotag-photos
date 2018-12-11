@@ -1,0 +1,1 @@
+name = "geotag_photos"

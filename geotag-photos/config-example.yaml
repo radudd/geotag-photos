@@ -1,0 +1,21 @@
+# Open Maps
+openmaps_base_url: https://nominatim.openstreetmap.org/reverse?format=jsonv2&accept-language=en-US
+
+# MongoDB
+mongo_host: 
+mongo_user: 
+mongo_pass: 
+mongo_db: 
+
+# Directories path
+photos_path: /Volumes/photo/
+# If a year, folders will be checked starting that year. 
+# If "all", all folders will be checked
+start_year: 2018
+# Default directory to geotag
+directory: 
+
+# Loggging
+# Leave empty or comment if you want to log to stdout
+log_filename: 
+log_level: WARNING
