@@ -1,7 +1,5 @@
 from cache import DiskCache
 import logger
 
-disk_cache = DiskCache('.cache.yml')
-loaded_cache = disk_cache.load()
-
+loaded_cache = DiskCache('.cache.yml').load()
 log = logger.generate_logger()
