@@ -25,4 +25,4 @@ def check_db():
 mongo = check_db()
 config = load_config()
 log = logger.generate_logger()
-loaded_cache = DiskCache('.cache.yml').load()
+cache = DiskCache(config['cache_file'])

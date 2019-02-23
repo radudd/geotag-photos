@@ -23,7 +23,7 @@ from pymongo import errors as pymongo_errors
 from requests import HTTPError
 from bson import json_util
 from collections import defaultdict, Counter, deque
-from config import log, loaded_cache
+from config import log, cache
 
 
 def load_config():
@@ -68,7 +68,7 @@ def get_metadata(directory):
             log.error(str(e))
 
 
-@Cache(cache=loaded_cache, maxsize=1024)
+@Cache(cache=cache.load(), maxsize=1024)
 def openmaps_response(latitude, longitude):
     with open('config.yaml', 'r') as fh:
         config = yaml.load(fh)
@@ -77,10 +77,12 @@ def openmaps_response(latitude, longitude):
     # Create a fake User Agent for the requests
     headers = {'User-Agent': UserAgent().firefox}
 
-    response = requests.get(url=url, params=params, headers=headers)
-    response.raise_for_status()
-
-    return response
+    try:
+        response = requests.get(url=url, params=params, headers=headers)
+        if response.ok:
+            return response
+    except requests.exceptions.ConnectionError as e:
+        return None
 
 
 def geotag_dir(directory, skip_db=False, openmaps_cache={}):
@@ -114,7 +116,7 @@ def geotag_dir(directory, skip_db=False, openmaps_cache={}):
     if not skip_db:
         locations = load_from_db(directory, directory_checksum)
         if locations is not None:
-            return (directory_orig_name, locations)
+            return (directory_orig_name, locations, openmaps_cache)
     # If not in DB, continue
     # Areas dict should be a defaultdict with the default element as Counter
     # (to count the appereance of each Name)
@@ -128,13 +130,14 @@ def geotag_dir(directory, skip_db=False, openmaps_cache={}):
     exiftools_metadata = get_metadata(directory)
 
     # Loop through pictures and get their location
-    log.info("Calling OpenMaps API to retrieve location information...")
+    log.info(
+        f"Call OpenMaps API to retrieve location information for {directory}")
     for picture in exiftools_metadata:
         try:
             latitude = picture['Composite:GPSLatitude']
             longitude = picture['Composite:GPSLongitude']
             response = openmaps_response(latitude, longitude)
-            openmaps_cache.update({(latitude, longitute): response})
+            openmaps_cache.update({(latitude, longitude): response})
 
             location = geolocation.compute(response.json())
             openmaps_urls.add(response.url)
@@ -169,7 +172,7 @@ def geotag_dir(directory, skip_db=False, openmaps_cache={}):
 
     # Return a tuple containing original directory name
     # and the computed location
-    return (directory_orig_name, locations, openmaps_cache)
+    return directory_orig_name, locations, openmaps_cache
     # log.debug (json.dumps(locations,indent=1))
 
 

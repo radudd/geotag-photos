@@ -33,9 +33,9 @@ class DiskCache(object):
         finally:
             return self._cache
 
-    def persist(self, cache):
+    def persist(self):
         with open(self._cache_file, 'w') as f:
-            yaml.dump(cache, f)
+            yaml.dump(self._cache, f)
 
 
 class Cache(object):

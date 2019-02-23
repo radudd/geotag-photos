@@ -10,7 +10,7 @@ import itertools
 import photos
 import folders
 from cache import DiskCache
-from config import logger, config, mongo
+from config import logger, config, mongo, cache
 
 
 """
@@ -52,8 +52,8 @@ def get_folders():
 
 
 def rename_folder(folder, skip_db, openmaps_cache):
-    folder_original_name, location, openmaps_cache = \
-        photos.geotag_dir(folder, skip_db, openmaps_cache)
+    folder_original_name, location, openmaps_cache \
+        = photos.geotag_dir(folder, skip_db, openmaps_cache)
     folders.rename(folder, folder_original_name, location, dry_run=True)
 
 if __name__ == "__main__":
@@ -69,10 +69,13 @@ if __name__ == "__main__":
                 config['photos_path']))
         sys.exit(e.errno)
 
-    openmaps_cache = {}
+    # disk_cache = DiskCache(config['cache_file'])
+    # openmaps_cache = disk_cache.load()
+    loaded_cache = cache.load()
+    skip_db = True
     for folder in folders_to_check:
-        rename_folder(folder, skip_db, openmaps_cache)
+        rename_folder(folder, skip_db, loaded_cache)
     # Write to DiskCache
-    DiskCache('.cache_openmaps.yaml').persist(openmaps_cache)
+    cache.persist()
 
     # add force argument for geotag_dir
