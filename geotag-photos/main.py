@@ -5,14 +5,12 @@ import yaml
 import os.path
 import sys
 import json
-import logger
-
-import folders
 import itertools
+
 import photos
+import folders
 from cache import DiskCache
-from mongo import MongoConnector
-from pymongo import errors
+from config import logger, config, mongo
 
 
 """
@@ -21,24 +19,6 @@ It will have to options: one to check everything(for the first run)
 and one to check starting with a specific year.
 This is configurable in the vars.yaml file in start_year
 """
-
-
-def load_config():
-    try:
-        with open('config.yaml', 'r') as fh:
-            config = yaml.load(fh)
-            return config
-    except FileNotFoundError:
-        sys.exit(1)
-
-
-def load_logger():
-    return logger.generate_logger()
-
-
-def check_db():
-    with MongoConnector() as mongo:
-        mongo.find_one()
 
 
 def filter(year):
@@ -77,20 +57,17 @@ def rename_folder(folder, skip_db, openmaps_cache):
     folders.rename(folder, folder_original_name, location, dry_run=True)
 
 if __name__ == "__main__":
-    config = load_config()
-    log = load_logger()
     try:
         folders_to_check = get_folders()
         skip_db = False
-        check_db()
+        if not mongo:
+            log.error("DB error: {}".format(e))
+            skip_db = True
     except OSError as e:
         log.error(
             "No files in directory {} or directory not reachable".format(
                 config['photos_path']))
         sys.exit(e.errno)
-    except (errors.ConnectionFailure, errors.ConfigurationError) as e:
-        log.error("DB error: {}".format(e))
-        skip_db = True
 
     openmaps_cache = {}
     for folder in folders_to_check:
