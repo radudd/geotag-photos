@@ -1,1 +1,3 @@
-# geotag-photos
+## geotag-photos
+
+Work in progress
