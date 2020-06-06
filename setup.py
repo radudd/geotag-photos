@@ -5,7 +5,7 @@ setup(name = "geogag_photos",
     description = "Geotags photos, extract location using ExifTools and OpenMaps API and rename directories based on their location",
     author = "Radu Domnu",
     author_email = "radu.domnu@gmail.com",
-    url="https://github.com/pypa/sampleproject",
+    url="https://github.com/pypa/geotag",
     install_requires=[
           'exiftools',
           'requests',
