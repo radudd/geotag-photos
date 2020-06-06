@@ -1,3 +1,3 @@
 ## geotag-photos
 
-Work in progress
+Still work in progress
